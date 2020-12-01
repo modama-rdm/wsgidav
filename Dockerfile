@@ -18,7 +18,7 @@ RUN apt-get -y update && apt-get -y install build-essential python3.7-dev \
 COPY . /code/
 
 RUN pip3 install -U pip virtualenv
-RUN pip3 install --no-cache-dir -e /code/ cheroot python-pam
+RUN pip3 install --no-cache-dir -e /code/ cheroot python-pam lxml
 RUN mkdir -p /var/wsgidav-root
 
 RUN adduser --gecos "" --disabled-password johndoe && \
