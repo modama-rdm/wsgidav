@@ -10,16 +10,20 @@
 
 # NOTE 2018-07-28: alpine does not compile lxml
 # NOTE 2019-11-27: smallest image generated at the end
-FROM python:3-alpine
+FROM debian:stable-slim
 
-#dependencies
-RUN apk add --no-cache --virtual .build-deps gcc libxslt-dev musl-dev py3-lxml py3-pip \
-    && pip3 install wsgidav cheroot lxml \
-    && apk del .build-deps gcc musl-dev
+RUN apt-get -y update && apt-get -y install build-essential python3.7-dev \
+    python3-venv python3-pip libpam0g libpam-runtime
 
-RUN pip install --no-cache-dir wsgidav cheroot lxml
+COPY . /code/
+
+RUN pip3 install -U pip virtualenv
+RUN pip3 install --no-cache-dir -e /code/ cheroot python-pam
 RUN mkdir -p /var/wsgidav-root
+
+RUN adduser --gecos "" --disabled-password johndoe && \
+    echo "johndoe:MyTestPasswd" | chpasswd
 
 EXPOSE 8080
 
-CMD wsgidav --host 0.0.0.0 --port 8080 --root /var/wsgidav-root --auth=anonymous --no-config
+CMD wsgidav --host 0.0.0.0 --port 8080 --root /tmp --auth=pam-login --no-config

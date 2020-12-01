@@ -6,6 +6,10 @@
 """
 WSGI application that handles one single WebDAV request.
 """
+import os
+import pwd
+import contextlib
+
 from wsgidav import compat, util, xml_tools
 from wsgidav.dav_error import (
     as_DAVError,
@@ -32,12 +36,20 @@ from wsgidav.dav_error import (
 )
 from wsgidav.util import etree
 
-
 __docformat__ = "reStructuredText"
 
 _logger = util.get_module_logger(__name__)
 
 DEFAULT_BLOCK_SIZE = 8192
+
+@contextlib.contextmanager
+def setuid(user_name):
+    user_pwd = pwd.getpwnam(user_name)
+    os.setegid(user_pwd.pw_gid)
+    os.seteuid(user_pwd.pw_uid)
+    yield
+    os.setegid(0)
+    os.seteuid(0)
 
 
 # ========================================================================
@@ -123,27 +135,29 @@ class RequestServer(object):
 
         # Run requesthandler (provider may override, #55)
         # _logger.warning("#1...")
-        app_iter = provider.custom_request_handler(environ, start_response, method)
-        # _logger.warning("#1... 2")
-        try:
-            # _logger.warning("#1... 3")
-            for v in app_iter:
-                # _logger.warning("#1... 4")
-                yield v
-            # _logger.warning("#1... 5")
-        # except Exception:
-        #     _logger.warning("#1... 6")
-        #     _logger.exception("")
-        #     status = "500 Oops"
-        #     response_headers = [("content-type", "text/plain")]
-        #     start_response(status, response_headers, sys.exc_info())
-        #     return ["error body goes here"]
-        finally:
-            # _logger.warning("#1... 7")
-            if hasattr(app_iter, "close"):
-                # _logger.warning("#1... 8")
-                app_iter.close()
-        return
+        user_name = environ.get('wsgidav.auth.user_name')
+        with setuid(user_name):
+            app_iter = provider.custom_request_handler(environ, start_response, method)
+            # _logger.warning("#1... 2")
+            try:
+                # _logger.warning("#1... 3")
+                for v in app_iter:
+                    # _logger.warning("#1... 4")
+                    yield v
+                # _logger.warning("#1... 5")
+            # except Exception:
+            #     _logger.warning("#1... 6")
+            #     _logger.exception("")
+            #     status = "500 Oops"
+            #     response_headers = [("content-type", "text/plain")]
+            #     start_response(status, response_headers, sys.exc_info())
+            #     return ["error body goes here"]
+            finally:
+                # _logger.warning("#1... 7")
+                if hasattr(app_iter, "close"):
+                    # _logger.warning("#1... 8")
+                    app_iter.close()
+            return
 
     def _fail(self, value, context_info=None, src_exception=None, err_condition=None):
         """Wrapper to raise (and log) DAVError."""
