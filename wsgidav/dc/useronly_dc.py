@@ -2,12 +2,9 @@
 # (c) 2009-2020 Martin Wendt and contributors; see WsgiDAV https://github.com/mar10/wsgidav
 # Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
 """
-Implementation of a domain controller that allows users to authenticate against
-a Pluggable Authentication Module ('PAM').
-
-Used by HTTPAuthenticator. Only available on linux and macOS.
-
-See https://wsgidav.readthedocs.io/en/latest/user_guide_configure.html
+Implementation of a domain controller that allows users to authenticate using
+only their username. The idea is that there is sufficient firewalling
+that only allows nextcloud to access this service.
 """
 from __future__ import print_function
 import pwd

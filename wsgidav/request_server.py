@@ -44,12 +44,14 @@ DEFAULT_BLOCK_SIZE = 8192
 
 @contextlib.contextmanager
 def setuid(user_name):
-    user_pwd = pwd.getpwnam(user_name)
-    os.setegid(user_pwd.pw_gid)
-    os.seteuid(user_pwd.pw_uid)
-    yield
-    os.setegid(0)
-    os.seteuid(0)
+    try:
+        user_pwd = pwd.getpwnam(user_name)
+        os.setegid(user_pwd.pw_gid)
+        os.seteuid(user_pwd.pw_uid)
+        yield
+    finally:
+        os.setegid(0)
+        os.seteuid(0)
 
 
 # ========================================================================
