@@ -21,9 +21,6 @@ RUN pip3 install -U pip virtualenv
 RUN pip3 install --no-cache-dir -e /code/ cheroot python-pam lxml
 RUN mkdir -p /var/wsgidav-root
 
-RUN adduser --gecos "" --disabled-password johndoe && \
-    echo "johndoe:MyTestPasswd" | chpasswd
-
 EXPOSE 8080
 
 CMD wsgidav --host 0.0.0.0 --port 8080 --root /tmp --auth=pam-login --no-config
