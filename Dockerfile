@@ -15,12 +15,13 @@ FROM debian:stable-slim
 RUN apt-get -y update && apt-get -y install build-essential python3.7-dev \
     python3-venv python3-pip libpam0g libpam-runtime libpam-sss libnss-sss
 
+RUN pip3 install -U pip virtualenv
+
 COPY . /code/
 
-RUN pip3 install -U pip virtualenv
 RUN pip3 install --no-cache-dir -e /code/ cheroot python-pam lxml
 RUN mkdir -p /var/wsgidav-root
 
 EXPOSE 8080
 
-CMD wsgidav --host 0.0.0.0 --port 8080 --root /tmp --auth=pam-login --no-config
+CMD wsgidav --host 0.0.0.0 --port 8080 --root /tmp --auth=useronly --no-config

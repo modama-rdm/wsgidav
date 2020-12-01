@@ -154,7 +154,7 @@ See https://github.com/mar10/wsgidav for additional information.
     )
     parser.add_argument(
         "--auth",
-        choices=("anonymous", "nt", "pam-login"),
+        choices=("anonymous", "nt", "pam-login", "useronly"),
         help="quick configuration of a domain controller when no config file "
         "is used",
     )
@@ -413,6 +413,16 @@ def _init_config():
             }
         )
         config["pam_dc"] = {"service": "login"}
+    elif auth == "useronly":
+        auth_conf.update(
+            {
+                "domain_controller": "wsgidav.dc.useronly_dc.UserOnlyDomainController",
+                "accept_basic": True,
+                "accept_digest": False,
+                "default_to_digest": False,
+            }
+        )
+        config["useronly_dc"] = {}
     # print(config)
 
     if cli_opts.get("reload"):
