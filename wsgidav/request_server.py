@@ -48,7 +48,8 @@ DEFAULT_BLOCK_SIZE = 8192
 def setuid(user_name):
     old_groups = os.getgroups()
     user_pwd = pwd.getpwnam(user_name)
-    user_groups = [g for g in grp.getgrall() if user_name in g.gr_mem]
+    user_groups = [g.gr_gid for g in grp.getgrall() if user_name in g.gr_mem]
+    user_groups.insert(0, user_pwd.pw_gid)
     try:
         os.setegid(user_pwd.pw_gid)
         os.setgroups(user_groups)
