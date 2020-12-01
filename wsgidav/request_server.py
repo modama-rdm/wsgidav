@@ -8,6 +8,7 @@ WSGI application that handles one single WebDAV request.
 """
 import os
 import pwd
+import grp
 import contextlib
 
 from wsgidav import compat, util, xml_tools
@@ -42,16 +43,21 @@ _logger = util.get_module_logger(__name__)
 
 DEFAULT_BLOCK_SIZE = 8192
 
+
 @contextlib.contextmanager
 def setuid(user_name):
+    old_groups = os.getgroups()
+    user_pwd = pwd.getpwnam(user_name)
+    user_groups = [g for g in grp.getgrall() if user_name in g.gr_mem]
     try:
-        user_pwd = pwd.getpwnam(user_name)
         os.setegid(user_pwd.pw_gid)
+        os.setgroups(user_groups)
         os.seteuid(user_pwd.pw_uid)
         yield
     finally:
         os.setegid(0)
         os.seteuid(0)
+        os.setgroups(old_groups)
 
 
 # ========================================================================
