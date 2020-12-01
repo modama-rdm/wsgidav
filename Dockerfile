@@ -24,4 +24,4 @@ RUN mkdir -p /var/wsgidav-root
 
 EXPOSE 8080
 
-CMD wsgidav --host 0.0.0.0 --port 8080 --root /tmp --auth=useronly --no-config
+CMD wsgidav --host 0.0.0.0 --port 8080 --root /var/wsgidav-root --auth=useronly --no-config
