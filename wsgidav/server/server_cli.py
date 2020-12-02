@@ -823,7 +823,8 @@ def _run_gunicorn(app, config, mode):
 
     options = {
         "bind": "{}:{}".format(config['host'], config['port']),
-        "threads": 50,
+        "worker_class": "sync",
+        "workers": 8,
         "timeout": 1200
     }
     GunicornApplication(app, options).run()

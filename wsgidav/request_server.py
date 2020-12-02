@@ -55,6 +55,11 @@ def setuid(user_name):
         os.setgroups(user_groups)
         os.seteuid(user_pwd.pw_uid)
         yield
+    except Exception as e:
+        _logger.error("error setting gid/uid/groups: %r", str(e))
+        _logger.error("groups: %r", user_groups)
+        _logger.error("gid: %d, uid: %d", user_pwd.pw_gid, user_pwd.pw_uid)
+        raise from e
     finally:
         os.setegid(0)
         os.seteuid(0)

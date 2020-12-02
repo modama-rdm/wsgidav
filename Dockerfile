@@ -19,9 +19,9 @@ RUN pip3 install -U pip virtualenv
 
 COPY . /code/
 
-RUN pip3 install --no-cache-dir -e /code/ cheroot python-pam lxml
+RUN pip3 install --no-cache-dir -e /code/ cheroot python-pam lxml gunicorn
 RUN mkdir -p /var/wsgidav-root
 
 EXPOSE 8080
 
-CMD wsgidav --host 0.0.0.0 --port 8080 --root /var/wsgidav-root --auth=useronly --no-config
+CMD wsgidav --host 0.0.0.0 --port 8080 --root /var/wsgidav-root --auth=useronly --no-config --server gunicorn
