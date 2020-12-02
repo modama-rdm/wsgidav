@@ -51,15 +51,16 @@ def setuid(user_name):
     user_groups = [g.gr_gid for g in grp.getgrall() if user_name in g.gr_mem]
     user_groups.insert(0, user_pwd.pw_gid)
     try:
-        os.setegid(user_pwd.pw_gid)
-        os.setgroups(user_groups)
-        os.seteuid(user_pwd.pw_uid)
+        try:
+            os.setegid(user_pwd.pw_gid)
+            os.setgroups(user_groups)
+            os.seteuid(user_pwd.pw_uid)
+        except Exception as e:
+            _logger.error("error setting gid/uid/groups: %r", str(e))
+            _logger.error("groups: %r", user_groups)
+            _logger.error("gid: %d, uid: %d", user_pwd.pw_gid, user_pwd.pw_uid)
+            raise
         yield
-    except Exception as e:
-        _logger.error("error setting gid/uid/groups: %r", str(e))
-        _logger.error("groups: %r", user_groups)
-        _logger.error("gid: %d, uid: %d", user_pwd.pw_gid, user_pwd.pw_uid)
-        raise
     finally:
         os.setegid(0)
         os.seteuid(0)
