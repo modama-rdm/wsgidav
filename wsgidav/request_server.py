@@ -65,7 +65,8 @@ def setuid(user_name):
                 "%d(%s)" % (gid, grp.getgrgid(gid).gr_name)
                 for gid in gids
             ])
-            _logger.warning(gids_str)
+            _logger.warning("want groups: %s", str(user_groups))
+            _logger.warning("have groups: %s", gids_str)
         except Exception as e:
             _logger.error("error setting gid/uid/groups: %r", str(e))
             _logger.error("groups: %r", user_groups)
