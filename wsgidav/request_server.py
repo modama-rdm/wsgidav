@@ -59,7 +59,7 @@ def setuid(user_name):
 
             # debug output:
             gids = os.getgroups()
-            gids.insert(0, os.getegid)
+            gids.insert(0, os.getegid())
 
             gids_str = ", ".join([
                 "%d(%s)" % (gid, grp.getgrgid(gid).gr_name)
