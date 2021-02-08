@@ -9,6 +9,7 @@ WSGI application that handles one single WebDAV request.
 import os
 import pwd
 import grp
+import sys
 import contextlib
 
 from wsgidav import compat, util, xml_tools
@@ -165,7 +166,7 @@ class RequestServer(object):
                 _logger.warning("PermissionError for %s", str(e.filename))
                 response_headers = [("content-type", "text/plain")]
                 start_response("403 Forbidden", response_headers, sys.exc_info())
-                return ["permission error while opening %s" % std(e.filename)]
+                return ["permission error while opening %s" % str(e.filename)]
             # except Exception:
             #     _logger.warning("#1... 6")
             #     _logger.exception("")
