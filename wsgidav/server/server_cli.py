@@ -822,7 +822,7 @@ def _run_gunicorn(app, config, mode):
             return self.application
 
     options = {
-        "bind": "{}:{}".format(config['host'], config['port']),
+        "bind": "unix:/run/gunicorn/gunicorn.socket",
         "worker_class": "sync",
         "workers": 8,
         "timeout": 1200
