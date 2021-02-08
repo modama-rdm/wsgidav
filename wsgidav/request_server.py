@@ -164,9 +164,10 @@ class RequestServer(object):
                 # _logger.warning("#1... 5")
             except PermissionError as e:
                 _logger.warning("PermissionError for %s", str(e.filename))
-                response_headers = [("content-type", "text/plain")]
+                body = ("permission error while opening %s" % str(e.filename)).encode("utf8")
+                response_headers = [("content-type", "text/plain"), ('content-length', len(body))]
                 start_response("403 Forbidden", response_headers, sys.exc_info())
-                return ["permission error while opening %s" % str(e.filename)]
+                return [body]
             # except Exception:
             #     _logger.warning("#1... 6")
             #     _logger.exception("")
