@@ -152,6 +152,7 @@ class RequestServer(object):
         # _logger.warning("#1...")
         user_name = environ.get('wsgidav.auth.user_name')
         with setuid(user_name):
+            app_iter = None
             try:
                 app_iter = provider.custom_request_handler(environ, start_response, method)
                 # _logger.warning("#1... 2")
@@ -174,7 +175,7 @@ class RequestServer(object):
             #     return ["error body goes here"]
             finally:
                 # _logger.warning("#1... 7")
-                if hasattr(app_iter, "close"):
+                if app_iter is not None and hasattr(app_iter, "close"):
                     # _logger.warning("#1... 8")
                     app_iter.close()
             return
