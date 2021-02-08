@@ -822,6 +822,11 @@ def _run_gunicorn(app, config, mode):
             return self.application
 
     options = {
+        # Use a unix domain socket for communication between reverse proxy (nginx)
+        # and gunicorn. This prevents a problem when too many TCP connections
+        # are opened and linger in timewait state, running into the system-wide
+        # limit. Another fix would be to use keepalive and non-sync worker, but this is
+        # incompatible with out other requirements, like easily switching UID/GID per-request.
         "bind": "unix:/run/gunicorn/gunicorn.socket",
         "worker_class": "sync",
         "workers": 18,
