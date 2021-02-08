@@ -824,7 +824,7 @@ def _run_gunicorn(app, config, mode):
     options = {
         "bind": "unix:/run/gunicorn/gunicorn.socket",
         "worker_class": "sync",
-        "workers": 8,
+        "workers": 18,
         "timeout": 1200
     }
     GunicornApplication(app, options).run()
