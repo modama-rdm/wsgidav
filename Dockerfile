@@ -13,7 +13,7 @@
 FROM debian:stable-slim
 
 RUN apt-get -y update && apt-get -y install build-essential python3.7-dev \
-    python3-venv python3-pip libpam0g libpam-runtime libpam-sss libnss-sss
+    python3-venv python3-pip libpam0g libpam-runtime libpam-sss libnss-sss python3-sss
 
 RUN pip3 install -U pip virtualenv
 

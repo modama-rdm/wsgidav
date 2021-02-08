@@ -12,6 +12,8 @@ import grp
 import sys
 import contextlib
 
+import pysss
+
 from wsgidav import compat, util, xml_tools
 from wsgidav.dav_error import (
     as_DAVError,
@@ -49,7 +51,9 @@ DEFAULT_BLOCK_SIZE = 8192
 def setuid(user_name):
     old_groups = os.getgroups()
     user_pwd = pwd.getpwnam(user_name)
-    user_groups = [g.gr_gid for g in grp.getgrall() if user_name in g.gr_mem]
+    user_group_names = pysss.getgrouplist(user_name)
+    user_groups = [grp.getgrnam(g).gr_gid
+                   for g in user_group_names]
     user_groups.insert(0, user_pwd.pw_gid)
     try:
         try:
