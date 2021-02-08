@@ -160,6 +160,11 @@ class RequestServer(object):
                     # _logger.warning("#1... 4")
                     yield v
                 # _logger.warning("#1... 5")
+            except PermissionError as e:
+                _logger.warning("PermissionError for %s", str(e.filename))
+                response_headers = [("content-type", "text/plain")]
+                start_response("403 Forbidden", response_headers, sys.exc_info())
+                return ["permission error while opening %s" % std(e.filename)]
             # except Exception:
             #     _logger.warning("#1... 6")
             #     _logger.exception("")
