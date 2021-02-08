@@ -56,6 +56,16 @@ def setuid(user_name):
             os.setegid(user_pwd.pw_gid)
             os.setgroups(user_groups)
             os.seteuid(user_pwd.pw_uid)
+
+            # debug output:
+            gids = os.getgroups()
+            gids.insert(0, os.getegid)
+
+            gids_str = ", ".join([
+                "%d(%s)" % (gid, grp.getgrgid(gid).gr_name)
+                for gid in gids
+            ])
+            _logger.warning(gids_str)
         except Exception as e:
             _logger.error("error setting gid/uid/groups: %r", str(e))
             _logger.error("groups: %r", user_groups)
