@@ -13,6 +13,7 @@ import sys
 import contextlib
 
 import pysss
+from cachetools import cached, TTLCache
 
 from wsgidav import compat, util, xml_tools
 from wsgidav.dav_error import (
@@ -47,14 +48,31 @@ _logger = util.get_module_logger(__name__)
 DEFAULT_BLOCK_SIZE = 8192
 
 
-@contextlib.contextmanager
-def setuid(user_name):
-    old_groups = os.getgroups()
-    user_pwd = pwd.getpwnam(user_name)
+@cached(cache=TTLCache(maxsize=1024, ttl=10))
+def get_user_pwd(user_name):
+    return pwd.getpwnam(user_name)
+
+
+@cached(cache=TTLCache(maxsize=1024, ttl=10))
+def get_user_groups(user_name):
+    user_pwd = get_user_pwd(user_name)
     user_group_names = pysss.getgrouplist(user_name)
     user_groups = [grp.getgrnam(g).gr_gid
                    for g in user_group_names]
     user_groups.insert(0, user_pwd.pw_gid)
+    return user_groups
+
+
+@cached(cache=TTLCache(maxsize=1024, ttl=10))
+def get_group_by_id(gid):
+    return grp.getgrgid(gid)
+
+
+@contextlib.contextmanager
+def setuid(user_name):
+    old_groups = os.getgroups()
+    user_pwd = get_user_pwd(user_name)
+    user_groups = get_user_groups(user_name)
     try:
         try:
             os.setegid(user_pwd.pw_gid)
@@ -66,7 +84,7 @@ def setuid(user_name):
             gids.insert(0, os.getegid())
 
             gids_str = ", ".join([
-                "%d(%s)" % (gid, grp.getgrgid(gid).gr_name)
+                "%d(%s)" % (gid, get_group_by_id(gid).gr_name)
                 for gid in gids
             ])
             _logger.warning("want groups: %s", str(user_groups))
