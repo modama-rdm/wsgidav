@@ -152,9 +152,9 @@ class RequestServer(object):
         # _logger.warning("#1...")
         user_name = environ.get('wsgidav.auth.user_name')
         with setuid(user_name):
-            app_iter = provider.custom_request_handler(environ, start_response, method)
-            # _logger.warning("#1... 2")
             try:
+                app_iter = provider.custom_request_handler(environ, start_response, method)
+                # _logger.warning("#1... 2")
                 # _logger.warning("#1... 3")
                 for v in app_iter:
                     # _logger.warning("#1... 4")
