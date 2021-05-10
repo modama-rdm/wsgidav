@@ -282,6 +282,13 @@ class ServerTest(unittest.TestCase):
         )
         client.check_response()
 
+        client.proppatch(
+            "/test/file1.txt",
+            set_props=[("{DAV:}lastmodified", "1620661439")],
+            remove_props=None,
+        )
+        client.check_response()
+
         client.copy(
             "/test/file1.txt", "/test/file2.txt", depth="infinity", overwrite=True
         )

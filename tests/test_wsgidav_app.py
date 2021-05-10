@@ -80,6 +80,18 @@ class ServerTest(unittest.TestCase):
         wsgi_app = self._makeWsgiDAVApp(False)
         self.app = webtest.TestApp(wsgi_app)
 
+        # XXX monkeypatch out setuid:
+        import wsgidav.request_server as rs
+        import contextlib
+
+        @contextlib.contextmanager
+        def _setuid(user_name):
+            yield
+
+        print("patching the monkey")
+        rs.setuid = _setuid
+
+
     def tearDown(self):
         shutil.rmtree(compat.to_unicode(self.rootpath))
         del self.app

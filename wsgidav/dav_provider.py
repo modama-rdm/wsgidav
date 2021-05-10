@@ -106,6 +106,10 @@ _standardLivePropNames = [
     "{DAV:}getetag",
     "{DAV:}getcontentlanguage",
     # "{DAV:}source", # removed in rfc4918
+
+    # XXX sorry, this is just convenient right now...
+    "{DAV:}last_modified",
+    "{DAV:}lastmodified",
 ]
 _lockPropertyNames = ["{DAV:}lockdiscovery", "{DAV:}supportedlock"]
 
@@ -765,7 +769,7 @@ class _DAVResource(object):
             # it may still make sense to make mutable in order to support time
             # stamp changes from e.g. utime calls or the touch or rsync -a
             # commands.
-            if name in ("{DAV:}getlastmodified", "{DAV:}last_modified"):
+            if name in ("{DAV:}getlastmodified", "{DAV:}last_modified", "{DAV:}lastmodified"):
                 try:
                     return self.set_last_modified(self.path, value.text, dry_run)
                 except Exception:

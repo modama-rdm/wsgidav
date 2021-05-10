@@ -12,7 +12,6 @@ import grp
 import sys
 import contextlib
 
-import pysss
 from cachetools import cached, TTLCache
 
 from wsgidav import compat, util, xml_tools
@@ -55,6 +54,7 @@ def get_user_pwd(user_name):
 
 @cached(cache=TTLCache(maxsize=1024, ttl=10))
 def get_user_groups(user_name):
+    import pysss
     user_pwd = get_user_pwd(user_name)
     user_group_names = pysss.getgrouplist(user_name)
     user_groups = [grp.getgrnam(g).gr_gid
