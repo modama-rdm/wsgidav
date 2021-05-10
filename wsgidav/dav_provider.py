@@ -761,8 +761,7 @@ class _DAVResource(object):
         # Accept custom live property updates on resources if configured.
         if (
             name.startswith("{DAV:}")
-            and name in _standardLivePropNames
-            and name in mutableLiveProps
+            and (name in _standardLivePropNames or name in mutableLiveProps)
         ):
             # Please note that some properties should not be mutable according
             # to RFC4918. This includes the 'getlastmodified' property, which
@@ -773,6 +772,7 @@ class _DAVResource(object):
                 try:
                     return self.set_last_modified(self.path, value.text, dry_run)
                 except Exception:
+                    _logger.exception("set_last_modified failed")
                     _logger.warning(
                         "Provider does not support set_last_modified on {}.".format(
                             self.path

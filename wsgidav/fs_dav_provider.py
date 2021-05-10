@@ -161,6 +161,11 @@ class FileResource(DAVNonCollection):
         """Set last modified time for destPath to timeStamp on epoch-format"""
         # Translate time from RFC 1123 to seconds since epoch format
         secs = util.parse_time_string(time_stamp)
+        if secs is None:
+            # Ackshually, {DAV:}lastmodified uses a unix timestamp in seconds since epoch (nextcloud...)
+            import re
+            if re.match("^\d+$", time_stamp):
+                secs = int(time_stamp)
         if not dry_run:
             os.utime(self._file_path, (secs, secs))
         return True
