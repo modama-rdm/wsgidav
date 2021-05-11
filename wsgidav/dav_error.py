@@ -9,6 +9,7 @@ Implements a DAVError class that is used to signal WebDAV and HTTP errors.
 from wsgidav import __version__, compat, xml_tools
 from wsgidav.xml_tools import etree
 
+import logging
 import datetime
 
 
@@ -16,6 +17,8 @@ import datetime
 
 
 __docformat__ = "reStructuredText"
+
+_logger = logging.getLogger(__name__)
 
 # ========================================================================
 # List of HTTP Response Codes.
@@ -283,8 +286,12 @@ def as_DAVError(e):
     """Convert any non-DAVError exception to HTTP_INTERNAL_ERROR."""
     if isinstance(e, DAVError):
         return e
+    elif isinstance(e, PermissionError):
+        return DAVError(HTTP_FORBIDDEN, src_exception=e)
     elif isinstance(e, Exception):
         # traceback.print_exc()
+        _logger.exception("internal server error")
         return DAVError(HTTP_INTERNAL_ERROR, src_exception=e)
     else:
+        _logger.exception("internal server error")
         return DAVError(HTTP_INTERNAL_ERROR, "{}".format(e))

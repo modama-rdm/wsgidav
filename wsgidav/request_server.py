@@ -129,6 +129,13 @@ class RequestServer(object):
         pass
 
     def __call__(self, environ, start_response):
+        try:
+            return self.do_call(environ, start_response)
+        except Exception:
+            _logger.exception("exception while handling request")
+            raise
+
+    def do_call(self, environ, start_response):
         assert "wsgidav.verbose" in environ
         provider = self._davProvider
         # TODO: allow anonymous somehow: this should run, even if http_authenticator middleware
@@ -201,9 +208,10 @@ class RequestServer(object):
                 response_headers = [("content-type", "text/plain"), ('content-length', str(len(body)))]
                 start_response("403 Forbidden", response_headers, sys.exc_info())
                 return [body]
-            # except Exception:
+            except Exception:
             #     _logger.warning("#1... 6")
-            #     _logger.exception("")
+                _logger.exception("exception while handling request")
+                raise
             #     status = "500 Oops"
             #     response_headers = [("content-type", "text/plain")]
             #     start_response(status, response_headers, sys.exc_info())
@@ -658,6 +666,7 @@ class RequestServer(object):
                 error_list = handled
                 handled = True
         except Exception as e:
+            _logger.exception("failed to handle_delete")
             error_list = [(res.get_href(), as_DAVError(e))]
             handled = True
         if handled:
