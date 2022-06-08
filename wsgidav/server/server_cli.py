@@ -829,7 +829,7 @@ def _run_gunicorn(app, config, mode):
         # incompatible with out other requirements, like easily switching UID/GID per-request.
         "bind": "unix:/run/gunicorn/gunicorn.socket",
         "worker_class": "sync",
-        "workers": 18,
+        "workers": 128,
         "timeout": 1200
     }
     GunicornApplication(app, options).run()
