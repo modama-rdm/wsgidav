@@ -1711,6 +1711,19 @@ class RequestServer(object):
 
         res.finalize_headers(environ, response_headers)
 
+        if (not is_head_method
+                and "sendfile" in environ["wsgidav.config"]
+                and environ["wsgidav.config"]["sendfile"]["enabled"]):
+            prefix = environ["wsgidav.config"]["sendfile"]["prefix"]
+            # "canonical" path that always starts with slash etc.
+            preferred_path = res.get_preferred_path()
+            response_headers.append(
+                (
+                    'X-Accel-Redirect',
+                    f'{prefix}{preferred_path}'
+                )
+            )
+
         if ispartialranges:
             # response_headers.append(("Content-Ranges", "bytes " + str(range_start) + "-" +
             #    str(range_end) + "/" + str(range_length)))
@@ -1728,6 +1741,10 @@ class RequestServer(object):
         if is_head_method:
             yield b""
             return
+
+        if ("sendfile" in environ["wsgidav.config"]
+                and environ["wsgidav.config"]["sendfile"]["enabled"]):
+            return  # sending the actual file is delegated to nginx
 
         fileobj = res.get_content()
 
