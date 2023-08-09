@@ -20,6 +20,8 @@ RUN --mount=type=cache,target=/root/.cache pip3 install cheroot python-pam lxml 
 
 COPY . /code/
 
+RUN ls -la /code/
+
 RUN --mount=type=cache,target=/root/.cache pip install -U pip setuptools
 RUN --mount=type=cache,target=/root/.cache pip install wheel gunicorn
 
