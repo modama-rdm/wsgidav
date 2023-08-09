@@ -46,13 +46,15 @@ _logger = util.get_module_logger(__name__)
 
 DEFAULT_BLOCK_SIZE = 8192
 
+DEFAULT_CACHE_TTL = 120
 
-@cached(cache=TTLCache(maxsize=1024, ttl=10))
+
+@cached(cache=TTLCache(maxsize=1024, ttl=DEFAULT_CACHE_TTL))
 def get_user_pwd(user_name):
     return pwd.getpwnam(user_name)
 
 
-@cached(cache=TTLCache(maxsize=1024, ttl=10))
+@cached(cache=TTLCache(maxsize=1024, ttl=DEFAULT_CACHE_TTL))
 def get_user_groups(user_name):
     import pysss
     user_pwd = get_user_pwd(user_name)
@@ -63,7 +65,7 @@ def get_user_groups(user_name):
     return user_groups
 
 
-@cached(cache=TTLCache(maxsize=1024, ttl=10))
+@cached(cache=TTLCache(maxsize=1024, ttl=DEFAULT_CACHE_TTL))
 def get_group_by_id(gid):
     return grp.getgrgid(gid)
 
