@@ -10,7 +10,7 @@
 
 # NOTE 2018-07-28: alpine does not compile lxml
 # NOTE 2019-11-27: smallest image generated at the end
-FROM debian:stable-slim
+FROM debian:11-slim
 
 RUN --mount=type=cache,target=/var/cache/apt apt-get -y update && apt-get -y install build-essential python3-dev \
     python3-venv python3-pip libpam0g libpam-runtime libpam-sss libnss-sss python3-sss
