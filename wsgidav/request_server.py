@@ -209,7 +209,8 @@ class RequestServer(object):
                 body = ("permission error while opening %s" % str(e.filename)).encode("utf8")
                 response_headers = [("content-type", "text/plain"), ('content-length', str(len(body)))]
                 start_response("403 Forbidden", response_headers, sys.exc_info())
-                return [body]
+                yield body
+                return
             except Exception:
             #     _logger.warning("#1... 6")
                 _logger.exception("exception while handling request")
