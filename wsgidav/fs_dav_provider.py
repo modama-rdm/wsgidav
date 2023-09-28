@@ -228,8 +228,8 @@ class FolderResource(DAVCollection):
             assert compat.is_unicode(name)
             # Skip non files (links and mount points)
             fp = os.path.join(self._file_path, name)
-            if not os.path.isdir(fp) and not os.path.isfile(fp):
-                _logger.debug("Skipping non-file {!r}".format(fp))
+            if os.path.islink(fp) or (not os.path.isdir(fp) and not os.path.isfile(fp)):
+                _logger.debug("Skipping non-file or symlink {!r}".format(fp))
                 continue
             # name = name.encode("utf8")
             name = compat.to_native(name)
@@ -394,16 +394,21 @@ class FilesystemProvider(DAVProvider):
 
         path_parts = path.strip("/").split("/")
         file_path = os.path.abspath(os.path.join(root_path, *path_parts))
-        if not file_path.startswith(root_path):
+        real_path = os.path.realpath(file_path)
+        if not real_path.startswith(root_path):
             raise RuntimeError(
                 "Security exception: tried to access file outside root: {}".format(
-                    file_path
+                    real_path
                 )
             )
+        # Probably a symlink somewhere
+        if real_path != file_path:
+            # A file that does not exist and cannot be opened for reading or writing
+            real_path = ''
 
         # Convert to unicode
-        file_path = util.to_unicode_safe(file_path)
-        return file_path
+        real_path = util.to_unicode_safe(real_path)
+        return real_path
 
     def is_readonly(self):
         return self.readonly
