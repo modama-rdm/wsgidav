@@ -19,6 +19,7 @@ from wsgidav.dir_browser import WsgiDavDirBrowser
 from wsgidav.error_printer import ErrorPrinter
 from wsgidav.http_authenticator import HTTPAuthenticator
 from wsgidav.request_resolver import RequestResolver
+from wsgidav.suid import SuidMiddleware
 
 
 __docformat__ = "reStructuredText"
@@ -48,6 +49,7 @@ DEFAULT_CONFIG = {
         WsgiDavDebugFilter,
         ErrorPrinter,
         HTTPAuthenticator,
+        SuidMiddleware,  # must be below authentication, above dirbrowser
         WsgiDavDirBrowser,  # configured under dir_browser option (see below)
         RequestResolver,  # this must be the last middleware item
     ],

@@ -6,13 +6,7 @@
 """
 WSGI application that handles one single WebDAV request.
 """
-import os
-import pwd
-import grp
 import sys
-import contextlib
-
-from cachetools import cached, TTLCache
 
 from wsgidav import compat, util, xml_tools
 from wsgidav.dav_error import (
@@ -45,62 +39,6 @@ __docformat__ = "reStructuredText"
 _logger = util.get_module_logger(__name__)
 
 DEFAULT_BLOCK_SIZE = 8192
-
-DEFAULT_CACHE_TTL = 120
-
-
-@cached(cache=TTLCache(maxsize=1024, ttl=DEFAULT_CACHE_TTL))
-def get_user_pwd(user_name):
-    return pwd.getpwnam(user_name)
-
-
-@cached(cache=TTLCache(maxsize=1024, ttl=DEFAULT_CACHE_TTL))
-def get_user_groups(user_name):
-    import pysss
-    user_pwd = get_user_pwd(user_name)
-    user_group_names = pysss.getgrouplist(user_name)
-    user_groups = [grp.getgrnam(g).gr_gid
-                   for g in user_group_names]
-    user_groups.insert(0, user_pwd.pw_gid)
-    return user_groups
-
-
-@cached(cache=TTLCache(maxsize=1024, ttl=DEFAULT_CACHE_TTL))
-def get_group_by_id(gid):
-    return grp.getgrgid(gid)
-
-
-@contextlib.contextmanager
-def setuid(user_name):
-    old_groups = os.getgroups()
-    user_pwd = get_user_pwd(user_name)
-    user_groups = get_user_groups(user_name)
-    try:
-        try:
-            os.setegid(user_pwd.pw_gid)
-            os.setgroups(user_groups)
-            os.seteuid(user_pwd.pw_uid)
-
-            # debug output:
-            gids = os.getgroups()
-            gids.insert(0, os.getegid())
-
-            gids_str = ", ".join([
-                "%d(%s)" % (gid, get_group_by_id(gid).gr_name)
-                for gid in gids
-            ])
-            _logger.warning("want groups: %s", str(user_groups))
-            _logger.warning("have groups: %s", gids_str)
-        except Exception as e:
-            _logger.error("error setting gid/uid/groups: %r", str(e))
-            _logger.error("groups: %r", user_groups)
-            _logger.error("gid: %d, uid: %d", user_pwd.pw_gid, user_pwd.pw_uid)
-            raise
-        yield
-    finally:
-        os.setegid(0)
-        os.seteuid(0)
-        os.setgroups(old_groups)
 
 
 # ========================================================================
@@ -193,38 +131,36 @@ class RequestServer(object):
 
         # Run requesthandler (provider may override, #55)
         # _logger.warning("#1...")
-        user_name = environ.get('wsgidav.auth.user_name')
-        with setuid(user_name):
-            app_iter = None
-            try:
-                app_iter = provider.custom_request_handler(environ, start_response, method)
-                # _logger.warning("#1... 2")
-                # _logger.warning("#1... 3")
-                for v in app_iter:
-                    # _logger.warning("#1... 4")
-                    yield v
-                # _logger.warning("#1... 5")
-            except PermissionError as e:
-                _logger.warning("PermissionError for %s", str(e.filename))
-                body = ("permission error while opening %s" % str(e.filename)).encode("utf8")
-                response_headers = [("content-type", "text/plain"), ('content-length', str(len(body)))]
-                start_response("403 Forbidden", response_headers, sys.exc_info())
-                yield body
-                return
-            except Exception:
-            #     _logger.warning("#1... 6")
-                _logger.exception("exception while handling request")
-                raise
-            #     status = "500 Oops"
-            #     response_headers = [("content-type", "text/plain")]
-            #     start_response(status, response_headers, sys.exc_info())
-            #     return ["error body goes here"]
-            finally:
-                # _logger.warning("#1... 7")
-                if app_iter is not None and hasattr(app_iter, "close"):
-                    # _logger.warning("#1... 8")
-                    app_iter.close()
+        app_iter = None
+        try:
+            app_iter = provider.custom_request_handler(environ, start_response, method)
+            # _logger.warning("#1... 2")
+            # _logger.warning("#1... 3")
+            for v in app_iter:
+                # _logger.warning("#1... 4")
+                yield v
+            # _logger.warning("#1... 5")
+        except PermissionError as e:
+            _logger.warning("PermissionError for %s", str(e.filename))
+            body = ("permission error while opening %s" % str(e.filename)).encode("utf8")
+            response_headers = [("content-type", "text/plain"), ('content-length', str(len(body)))]
+            start_response("403 Forbidden", response_headers, sys.exc_info())
+            yield body
             return
+        except Exception:
+            # _logger.warning("#1... 6")
+            _logger.exception("exception while handling request")
+            raise
+        #     status = "500 Oops"
+        #     response_headers = [("content-type", "text/plain")]
+        #     start_response(status, response_headers, sys.exc_info())
+        #     return ["error body goes here"]
+        finally:
+            # _logger.warning("#1... 7")
+            if app_iter is not None and hasattr(app_iter, "close"):
+                # _logger.warning("#1... 8")
+                app_iter.close()
+        return
 
     def _fail(self, value, context_info=None, src_exception=None, err_condition=None):
         """Wrapper to raise (and log) DAVError."""
