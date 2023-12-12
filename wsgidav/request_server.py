@@ -7,6 +7,7 @@
 WSGI application that handles one single WebDAV request.
 """
 import sys
+import urllib.parse
 
 from wsgidav import compat, util, xml_tools
 from wsgidav.dav_error import (
@@ -1659,7 +1660,7 @@ class RequestServer(object):
             response_headers.append(
                 (
                     'X-Accel-Redirect',
-                    f'{prefix}{preferred_path}'
+                    urllib.parse.quote(f'{prefix}{preferred_path}')
                 )
             )
 
