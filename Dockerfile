@@ -12,7 +12,7 @@
 # NOTE 2019-11-27: smallest image generated at the end
 FROM debian:11-slim
 
-RUN --mount=type=cache,target=/var/cache/apt apt-get -y update && apt-get -y install build-essential python3-dev \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked apt-get -y update && apt-get -y install build-essential python3-dev \
     python3-venv python3-pip libpam0g libpam-runtime libpam-sss libnss-sss python3-sss
 
 RUN --mount=type=cache,target=/root/.cache pip3 install -U pip virtualenv 'cachetools==4.2.1'
