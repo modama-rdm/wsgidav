@@ -15,9 +15,9 @@ FROM debian:13-slim
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
     apt-get -y update && apt-get -y install build-essential python3-dev \
-    python3-venv python3-pip libpam0g libpam-runtime libpam-sss libnss-sss python3-sss python3-gunicorn python3-cheroot python3-lxml python3-wheel
+    python3-venv python3-pip libpam0g libpam-runtime libpam-sss libnss-sss python3-sss
 
-RUN --mount=type=cache,target=/root/.cache pip install --break-system-packages python-pam
+RUN --mount=type=cache,target=/root/.cache pip install --break-system-packages python-pam gunicorn cheroot lxml wheel
 
 COPY . /code/
 
