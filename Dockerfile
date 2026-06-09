@@ -10,27 +10,26 @@
 
 # NOTE 2018-07-28: alpine does not compile lxml
 # NOTE 2019-11-27: smallest image generated at the end
-FROM debian:13-slim
+FROM debian:11-slim
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
     apt-get -y update && apt-get -y install build-essential python3-dev \
     python3-venv python3-pip libpam0g libpam-runtime libpam-sss libnss-sss python3-sss
 
-RUN --mount=type=cache,target=/root/.cache python3 -m venv /venv/
-
-RUN --mount=type=cache,target=/root/.cache /venv/bin/python -m pip install cheroot python-pam lxml gunicorn
+RUN --mount=type=cache,target=/root/.cache pip3 install -U pip virtualenv 'cachetools==4.2.1'
+RUN --mount=type=cache,target=/root/.cache pip3 install cheroot python-pam lxml gunicorn
 
 COPY . /code/
 
 RUN ls -la /code/
 
-RUN --mount=type=cache,target=/root/.cache /venv/bin/python -m pip install -U pip setuptools
-RUN --mount=type=cache,target=/root/.cache /venv/bin/python -m pip install wheel gunicorn
+RUN --mount=type=cache,target=/root/.cache pip install -U pip setuptools
+RUN --mount=type=cache,target=/root/.cache pip install wheel gunicorn
 
-RUN --mount=type=cache,target=/root/.cache /venv/bin/python -m pip install /code/
+RUN --mount=type=cache,target=/root/.cache pip install /code/
 RUN mkdir -p /var/wsgidav-root
 
 EXPOSE 8080
 
-CMD ["/venv/bin/wsgidav", "--host", "0.0.0.0", "--port", "8080", "--root", "/var/wsgidav-root", "--auth=useronly", "--config", "/wsgidav.json", "--server", "gunicorn"]
+CMD ["wsgidav", "--host", "0.0.0.0", "--port", "8080", "--root", "/var/wsgidav-root", "--auth=useronly", "--config", "/wsgidav.json", "--server", "gunicorn"]
