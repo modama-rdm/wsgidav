@@ -146,7 +146,7 @@ def run_wsgidav_server(with_auth, with_ssl, provider=None, **kwargs):
 
 
     # XXX monkeypatch out setuid:
-    import wsgidav.request_server as rs
+    import wsgidav.suid as suid
     import contextlib
 
     @contextlib.contextmanager
@@ -154,7 +154,7 @@ def run_wsgidav_server(with_auth, with_ssl, provider=None, **kwargs):
         yield
 
     print("patching the monkey")
-    rs.setuid = _setuid
+    suid.setuid = _setuid
 
     # from wsgidav.server.server_cli import _runBuiltIn
     # _runBuiltIn(app, config, None)

@@ -43,7 +43,7 @@ except ImportError:
 class ServerTest(unittest.TestCase):
     """Test wsgidav_app using paste.fixture."""
 
-    def _makeWsgiDAVApp(self, withAuthentication):
+    def _makeWsgiDAVApp(self, withAuthentication, sendfile=False):
         self.rootpath = os.path.join(gettempdir(), "wsgidav-test")
         if not os.path.exists(self.rootpath):
             os.mkdir(self.rootpath)
@@ -61,6 +61,9 @@ class ServerTest(unittest.TestCase):
             "property_manager": None,  # None: no property manager
             "lock_manager": True,  # True: use lock_manager.LockManager
         }
+
+        if sendfile:
+            config["sendfile"] = {"enabled": True, "prefix": "/protected"}
 
         if withAuthentication:
             config["http_authenticator"].update(
@@ -81,7 +84,7 @@ class ServerTest(unittest.TestCase):
         self.app = webtest.TestApp(wsgi_app)
 
         # XXX monkeypatch out setuid:
-        import wsgidav.request_server as rs
+        import wsgidav.suid as suid
         import contextlib
 
         @contextlib.contextmanager
@@ -89,7 +92,7 @@ class ServerTest(unittest.TestCase):
             yield
 
         print("patching the monkey")
-        rs.setuid = _setuid
+        suid.setuid = _setuid
 
 
     def tearDown(self):
@@ -101,6 +104,22 @@ class ServerTest(unittest.TestCase):
         self.assertTrue(
             __debug__, "__debug__ must be True, otherwise asserts are ignored"
         )
+
+    def testSendfileRefusesUnreadableFile(self):
+        """With sendfile the proxy sends the file: the server must refuse a file
+        the user may not read instead of delegating it."""
+        if os.geteuid() == 0:
+            self.skipTest("root may read everything")
+        app = webtest.TestApp(self._makeWsgiDAVApp(False, sendfile=True))
+        path = os.path.join(self.rootpath, "secret.txt")
+        with open(path, "wb") as f:
+            f.write(b"secret")
+        os.chmod(path, 0o000)
+        app.get("/secret.txt", status=403)
+        os.chmod(path, 0o644)
+        res = app.get("/secret.txt", status=200)
+        assert res.headers["X-Accel-Redirect"] == "/protected/secret.txt"
+        assert res.body == b""  # the proxy sends the content
 
     def testDirBrowser(self):
         """Server must respond to GET on a collection."""
