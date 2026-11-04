@@ -1654,7 +1654,7 @@ class RequestServer(object):
         if (not is_head_method
                 and "sendfile" in environ["wsgidav.config"]
                 and environ["wsgidav.config"]["sendfile"]["enabled"]):
-            # The proxy sends the file as its own user: check that this user may read it
+            # Check that this user may read the file (`get_content()` only opens it)
             try:
                 res.get_content().close()
             except PermissionError:
