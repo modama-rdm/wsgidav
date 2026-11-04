@@ -1654,6 +1654,11 @@ class RequestServer(object):
         if (not is_head_method
                 and "sendfile" in environ["wsgidav.config"]
                 and environ["wsgidav.config"]["sendfile"]["enabled"]):
+            # The proxy sends the file as its own user: check that this user may read it
+            try:
+                res.get_content().close()
+            except PermissionError:
+                self._fail(HTTP_FORBIDDEN, path)
             prefix = environ["wsgidav.config"]["sendfile"]["prefix"]
             # "canonical" path that always starts with slash etc.
             preferred_path = res.get_preferred_path()
