@@ -81,7 +81,7 @@ class ServerTest(unittest.TestCase):
         self.app = webtest.TestApp(wsgi_app)
 
         # XXX monkeypatch out setuid:
-        import wsgidav.request_server as rs
+        import wsgidav.suid as suid
         import contextlib
 
         @contextlib.contextmanager
@@ -89,7 +89,7 @@ class ServerTest(unittest.TestCase):
             yield
 
         print("patching the monkey")
-        rs.setuid = _setuid
+        suid.setuid = _setuid
 
 
     def tearDown(self):
